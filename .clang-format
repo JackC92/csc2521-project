@@ -1,0 +1,38 @@
+---
+Language: Cpp
+AccessModifierOffset: -4
+AlignAfterOpenBracket: Align
+AlignArrayOfStructures: Right
+AlignOperands: true
+AllowAllArgumentsOnNextLine: false
+AllowAllParametersOfDeclarationOnNextLine: false
+AllowShortBlocksOnASingleLine: Empty
+AllowShortFunctionsOnASingleLine: None
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: false
+AlwaysBreakTemplateDeclarations: Yes
+BinPackArguments: false
+BinPackParameters: false
+BreakBeforeBraces: Allman
+ColumnLimit: 120
+Cpp11BracedListStyle: false
+FixNamespaceComments: true
+IncludeCategories:
+  - Regex: '^"na/'
+    Priority: 1
+  - Regex: '^"driver/'
+    Priority: 2
+  - Regex: '"\w+([\.\/]\w+)*"'
+    Priority: 3
+  - Regex: '<\w+>'
+    Priority: 4
+IndentAccessModifiers: false
+IndentWidth: 4
+NamespaceIndentation: All
+PenaltyReturnTypeOnItsOwnLine: 100
+PointerAlignment: Right
+ShortNamespaceLines: 0
+Standard: c++17
+TabWidth: 4
+UseTab: Never
+...
