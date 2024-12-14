@@ -64,15 +64,17 @@ set_target_properties(core vbd PROPERTIES CUDA_RESOLVE_DEVICE_SYMBOLS ON)
 
 target_include_directories(core PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
 
-find_package(Eigen3 3.4 REQUIRED CONFIG) # calling before libigl to use custom version of Eigen, otherwise libigl fetches Eigen at tags/3.4.0
+#find_package(Eigen3 3.4 REQUIRED CONFIG) # calling before libigl to use custom version of Eigen, otherwise libigl fetches Eigen at tags/3.4.0
 find_package(TBB REQUIRED CONFIG)
 
+add_subdirectory("external/eigen"           EXCLUDE_FROM_ALL)
+add_subdirectory("external/autodiff"        EXCLUDE_FROM_ALL)
 add_subdirectory("external/fmt"             EXCLUDE_FROM_ALL)
 add_subdirectory("external/implot"          EXCLUDE_FROM_ALL)
 add_subdirectory("external/libigl"          EXCLUDE_FROM_ALL)
 add_subdirectory("external/polyscope"       EXCLUDE_FROM_ALL)
 
-target_link_libraries(core PUBLIC Eigen3::Eigen fmt igl::core TBB::tbb)
+target_link_libraries(core PUBLIC autodiff Eigen3::Eigen fmt igl::core TBB::tbb)
 target_link_libraries(vbd PRIVATE core implot polyscope)
 
 set(_linked_targets "")
