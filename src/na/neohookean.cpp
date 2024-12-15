@@ -17,7 +17,7 @@ double NeoHookean::psi(const Eigen::Matrix3d &F) const
     return 0.5 * (m_mu * (Ic - 3.0) + m_lambda * Jminus1 * Jminus1);
 }
 
-static Eigen::Matrix3d partialJ_partialF(const Eigen::Matrix3d &F)
+Eigen::Matrix3d partialJ_partialF(const Eigen::Matrix3d &F)
 {
     Eigen::Matrix3d pJpF;
 
@@ -35,7 +35,7 @@ Eigen::Matrix3d NeoHookean::gradF(const Eigen::Matrix3d &F) const
     return m_mu * F + m_lambda * Jminus1 * pJpF;
 }
 
-static Eigen::Matrix3d hat_matrix(const Eigen::Vector3d& v)
+Eigen::Matrix3d hat_matrix(const Eigen::Vector3d& v)
 {
     Eigen::Matrix3d hat;
     hat << 0.0, -v(2), v(1), v(2), 0.0, -v(0), -v(1), v(0), 0.0;
