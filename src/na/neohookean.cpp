@@ -28,41 +28,85 @@ Eigen::Matrix3d partialJ_partialF(const Eigen::Matrix3d &F)
     return pJpF;
 }
 
-Eigen::Matrix3d NeoHookean::gradF(const Eigen::Matrix3d &F) const
+Eigen::Vector9d NeoHookean::gradF(const Eigen::Matrix3d &F) const
 {
-    const Eigen::Matrix3d pJpF = partialJ_partialF(F);
     const double Jminus1 = F.determinant() - m_alpha;
-    return m_mu * F + m_lambda * Jminus1 * pJpF;
-}
 
-Eigen::Matrix3d hat_matrix(const Eigen::Vector3d& v)
-{
-    Eigen::Matrix3d hat;
-    hat << 0.0, -v(2), v(1), v(2), 0.0, -v(0), -v(1), v(0), 0.0;
-    return hat;
+    Eigen::Vector9d grad;
+    grad(0) = +(F(1, 1) * F(2, 2) - F(2, 1) * F(1, 2)) * m_lambda * Jminus1 + m_mu * F(0, 0);
+    grad(1) = -(F(0, 1) * F(2, 2) - F(2, 1) * F(0, 2)) * m_lambda * Jminus1 + m_mu * F(1, 0);
+    grad(2) = +(F(0, 1) * F(1, 2) - F(1, 1) * F(0, 2)) * m_lambda * Jminus1 + m_mu * F(2, 0);
+    grad(3) = -(F(1, 0) * F(2, 2) - F(2, 0) * F(1, 2)) * m_lambda * Jminus1 + m_mu * F(0, 1);
+    grad(4) = +(F(0, 0) * F(2, 2) - F(2, 0) * F(0, 2)) * m_lambda * Jminus1 + m_mu * F(1, 1);
+    grad(5) = -(F(0, 0) * F(1, 2) - F(1, 0) * F(0, 2)) * m_lambda * Jminus1 + m_mu * F(2, 1);
+    grad(6) = +(F(1, 0) * F(2, 1) - F(2, 0) * F(1, 1)) * m_lambda * Jminus1 + m_mu * F(0, 2);
+    grad(7) = -(F(0, 0) * F(2, 1) - F(2, 0) * F(0, 1)) * m_lambda * Jminus1 + m_mu * F(1, 2);
+    grad(8) = +(F(0, 0) * F(1, 1) - F(1, 0) * F(0, 1)) * m_lambda * Jminus1 + m_mu * F(2, 2);
+    return grad;
 }
 
 Eigen::Matrix9d NeoHookean::hessF(const Eigen::Matrix3d &F) const
 {
-    const double scale = m_lambda * (F.determinant() - m_alpha);
+    const double Jminus1 = F.determinant() - m_alpha;
 
-    Eigen::Matrix3d ahat = hat_matrix(scale * F.col(0));
-    Eigen::Matrix3d bhat = hat_matrix(scale * F.col(1));
-    Eigen::Matrix3d chat = hat_matrix(scale * F.col(2));
+    Eigen::Vector9d C;
+    C(0) = +(F(1, 1) * F(2, 2) - F(2, 1) * F(1, 2));
+    C(1) = -(F(0, 1) * F(2, 2) - F(2, 1) * F(0, 2));
+    C(2) = +(F(0, 1) * F(1, 2) - F(1, 1) * F(0, 2));
+    C(3) = -(F(1, 0) * F(2, 2) - F(2, 0) * F(1, 2));
+    C(4) = +(F(0, 0) * F(2, 2) - F(2, 0) * F(0, 2));
+    C(5) = -(F(0, 0) * F(1, 2) - F(1, 0) * F(0, 2));
+    C(6) = +(F(1, 0) * F(2, 1) - F(2, 0) * F(1, 1));
+    C(7) = -(F(0, 0) * F(2, 1) - F(2, 0) * F(0, 1));
+    C(8) = +(F(0, 0) * F(1, 1) - F(1, 0) * F(0, 1));
 
-    Eigen::Matrix9d FJ;
-    FJ.block<3, 3>(0, 0).setZero();
-    FJ.block<3, 3>(0, 3) = -chat;
-    FJ.block<3, 3>(0, 6) = bhat;
+    Eigen::Matrix9d hess = C * C.transpose();
+    hess(0, 4) += +F(2, 2) * Jminus1;
+    hess(0, 8) += +F(1, 1) * Jminus1;
+    hess(0, 5) += -F(1, 2) * Jminus1;
+    hess(0, 7) += -F(2, 1) * Jminus1;
 
-    FJ.block<3, 3>(3, 0) = chat;
-    FJ.block<3, 3>(3, 3).setZero();
-    FJ.block<3, 3>(3, 6) = -ahat;
+    hess(1, 3) += -F(2, 2) * Jminus1;
+    hess(1, 8) += -F(0, 1) * Jminus1;
+    hess(1, 5) += +F(0, 2) * Jminus1;
+    hess(1, 6) += +F(2, 1) * Jminus1;
 
-    FJ.block<3, 3>(6, 0) = -bhat;
-    FJ.block<3, 3>(6, 3) = ahat;
-    FJ.block<3, 3>(6, 6).setZero();
+    hess(2, 3) += +F(1, 2) * Jminus1;
+    hess(2, 7) += +F(0, 1) * Jminus1;
+    hess(2, 4) += -F(0, 2) * Jminus1;
+    hess(2, 6) += -F(1, 1) * Jminus1;
 
-    const Eigen::Vector9d pJpF = partialJ_partialF(F).reshaped();
-    return m_mu * Eigen::Matrix9d::Identity() + m_lambda * pJpF * pJpF.transpose() + FJ;
+    hess(3, 1) += -F(2, 2) * Jminus1;
+    hess(3, 8) += -F(1, 0) * Jminus1;
+    hess(3, 2) += +F(1, 2) * Jminus1;
+    hess(3, 7) += +F(2, 0) * Jminus1;
+
+    hess(4, 0) += +F(2, 2) * Jminus1;
+    hess(4, 8) += +F(0, 0) * Jminus1;
+    hess(4, 2) += -F(0, 2) * Jminus1;
+    hess(4, 6) += -F(2, 0) * Jminus1;
+
+    hess(5, 0) += -F(1, 2) * Jminus1;
+    hess(5, 7) += -F(0, 0) * Jminus1;
+    hess(5, 1) += +F(0, 2) * Jminus1;
+    hess(5, 6) += +F(1, 0) * Jminus1;
+
+    hess(6, 1) += +F(2, 1) * Jminus1;
+    hess(6, 5) += +F(1, 0) * Jminus1;
+    hess(6, 2) += -F(1, 1) * Jminus1;
+    hess(6, 4) += -F(2, 0) * Jminus1;
+
+    hess(7, 0) += -F(2, 1) * Jminus1;
+    hess(7, 5) += -F(0, 0) * Jminus1;
+    hess(7, 2) += +F(0, 1) * Jminus1;
+    hess(7, 3) += +F(2, 0) * Jminus1;
+
+    hess(8, 0) += +F(1, 1) * Jminus1;
+    hess(8, 4) += +F(0, 0) * Jminus1;
+    hess(8, 1) += -F(0, 1) * Jminus1;
+    hess(8, 3) += -F(1, 0) * Jminus1;
+
+    hess *= m_lambda;
+    hess.diagonal().array() += m_mu;
+    return hess;
 }

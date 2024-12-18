@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-void na::load_mesh(const std::string &file, std::vector<Eigen::Vector3d> &verts, std::vector<Eigen::Vector4i> &tets)
+void load_mesh(const std::string &file, std::vector<Eigen::Vector3d> &verts, std::vector<Eigen::Vector4i> &tets)
 {
     Eigen::MatrixXd V;
     Eigen::MatrixXi T;

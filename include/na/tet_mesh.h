@@ -4,17 +4,6 @@
 #include "Eigen/Core"
 #include <vector>
 
-double compute_tet_volume(const Eigen::Vector3d &v0,
-                          const Eigen::Vector3d &v1,
-                          const Eigen::Vector3d &v2,
-                          const Eigen::Vector3d &v3);
-
-std::vector<double> compute_rest_volumes(const std::vector<Eigen::Vector4i> &tets,
-                                         const std::vector<Eigen::Vector3d> &verts);
-
-std::vector<Eigen::Matrix3d> compute_Dm_inv(const std::vector<Eigen::Vector4i> &tets,
-                                            const std::vector<Eigen::Vector3d> &verts);
-
 class TetMesh
 {
 public:
@@ -27,15 +16,26 @@ public:
     const Eigen::Vector3d &get_vertex(const std::size_t idx) const;
     void set_vertex(const std::size_t idx, const Eigen::Vector3d &vert);
 
+    const std::vector<Eigen::Vector4i> &get_tets() const;
+    const Eigen::Vector4i &get_tet(const std::size_t tet_idx) const;
+
+    void set_vertex_fixed(const std::size_t idx, const bool is_fixed);
     bool is_vertex_fixed(const std::size_t idx) const;
 
     Eigen::Matrix3d compute_F(const std::size_t tet_idx) const;
-    Eigen::Matrix3d compute_F(const std::size_t tet_idx, const Eigen::MatrixXd& perturbation) const;
+    Eigen::Matrix3d compute_F(const std::size_t tet_idx, const Eigen::MatrixXd &perturbation) const;
+
+    const double get_mass(const std::size_t idx) const;
+    const double get_rest_volume(const std::size_t tet_idx) const;
+    const Eigen::Matrix3d &get_Dm_inv(const std::size_t tet_idx) const;
+
+    static std::vector<std::vector<std::pair<int, int>>> compute_adjacency(const std::vector<Eigen::Vector4i> &tets);
 
 private:
     std::vector<Eigen::Vector3d> m_vertices;
     std::vector<Eigen::Vector3d> m_rest_vertices;
     std::vector<Eigen::Vector4i> m_tets;
+    std::vector<double> m_masses;
     std::vector<double> m_rest_volumes;
     std::vector<Eigen::Matrix3d> m_Dm_inv;
 

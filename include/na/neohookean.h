@@ -13,7 +13,7 @@ public:
 
     double psi(const Eigen::Matrix3d &F) const;
 
-    Eigen::Matrix3d gradF(const Eigen::Matrix3d &F) const;
+    Eigen::Vector9d gradF(const Eigen::Matrix3d &F) const;
 
     Eigen::Matrix9d hessF(const Eigen::Matrix3d &F) const;
 
